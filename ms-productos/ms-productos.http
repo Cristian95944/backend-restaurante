@@ -1,0 +1,72 @@
+### ─── VARIABLES ────────────────────────────────────────────
+@base = http://localhost:8003
+@token = PEGA_AQUI_TU_TOKEN
+
+### ─── CATEGORÍAS ───────────────────────────────────────────
+
+### Listar todas las categorías
+GET {{base}}/categorias
+Authorization: Bearer {{token}}
+
+### Crear categoría
+POST {{base}}/categorias
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombre": "Entradas"
+}
+
+### Actualizar categoría
+PUT {{base}}/categorias/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombre": "Entradas y Aperitivos"
+}
+
+### Eliminar categoría
+DELETE {{base}}/categorias/1
+Authorization: Bearer {{token}}
+
+### ─── PRODUCTOS ─────────────────────────────────────────────
+
+### Listar todos los productos
+GET {{base}}/productos
+Authorization: Bearer {{token}}
+
+### Obtener un producto por ID
+GET {{base}}/productos/1
+Authorization: Bearer {{token}}
+
+### Obtener productos por categoría
+GET {{base}}/productos/categoria/1
+Authorization: Bearer {{token}}
+
+### Crear producto
+POST {{base}}/productos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nombre": "Ceviche de camarón",
+  "descripcion": "Fresco ceviche con camarones y limón",
+  "precio": 18500,
+  "disponible": true,
+  "categoria_id": 1
+}
+
+### Actualizar producto
+PUT {{base}}/productos/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "precio": 20000,
+  "disponible": false
+}
+
+### Eliminar producto
+DELETE {{base}}/productos/1
+Authorization: Bearer {{token}}
