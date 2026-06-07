@@ -1,0 +1,51 @@
+### ─── VARIABLES ────────────────────────────────────────────
+@base = http://localhost:8004
+@token = PEGA_AQUI_TU_TOKEN
+
+### Listar todos los pedidos
+GET {{base}}/pedidos
+Authorization: Bearer {{token}}
+
+### Obtener un pedido por ID
+GET {{base}}/pedidos/1
+Authorization: Bearer {{token}}
+
+### Obtener pedidos por mesa
+GET {{base}}/pedidos/mesa/1
+Authorization: Bearer {{token}}
+
+### Crear pedido
+POST {{base}}/pedidos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "mesa_id": 1,
+  "detalles": [
+    {
+      "producto_id": 1,
+      "nombre_producto": "Hamburguesa Especial",
+      "cantidad": 1,
+      "precio_unitario": 28000
+    },
+    {
+      "producto_id": 2,
+      "nombre_producto": "Limonada Natural",
+      "cantidad": 2,
+      "precio_unitario": 8000
+    }
+  ]
+}
+
+### Actualizar estado del pedido
+PUT {{base}}/pedidos/1/estado
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "estado": "en_preparacion"
+}
+
+### Eliminar pedido
+DELETE {{base}}/pedidos/1
+Authorization: Bearer {{token}}
