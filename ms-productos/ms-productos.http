@@ -1,6 +1,6 @@
 ### ─── VARIABLES ────────────────────────────────────────────
 @base = http://localhost:8003
-@token = PEGA_AQUI_TU_TOKEN
+@token = a44afda2435538e94e2b5947aef41676af829ebbfe07e3441f040fdfbe051e41
 
 ### ─── CATEGORÍAS ───────────────────────────────────────────
 

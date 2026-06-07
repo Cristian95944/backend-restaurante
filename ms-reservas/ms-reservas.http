@@ -1,6 +1,6 @@
 ### Variables
 @base_url = http://localhost:8002
-@token = aqui_va_el_token_despues_de_login
+@token = a44afda2435538e94e2b5947aef41676af829ebbfe07e3441f040fdfbe051e41
 
 ### Listar mesas
 GET {{base_url}}/mesas
