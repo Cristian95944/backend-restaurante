@@ -17,10 +17,7 @@ class Pedido extends Model
         'estado'
     ];
 
-    protected $casts = [
-        'subtotal' => 'float',
-        'total' => 'float'
-    ];
+    public $timestamps = true;
 
     public function detalles()
     {

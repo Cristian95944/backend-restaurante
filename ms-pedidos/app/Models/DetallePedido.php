@@ -17,11 +17,7 @@ class DetallePedido extends Model
         'subtotal'
     ];
 
-    protected $casts = [
-        'cantidad' => 'integer',
-        'precio_unitario' => 'float',
-        'subtotal' => 'float'
-    ];
+    public $timestamps = true;
 
     public function pedido()
     {
