@@ -10,13 +10,10 @@ class Categoria extends Model
 
     protected $fillable = [
         'nombre',
-        'descripcion',
-        'estado'
+        'descripcion'
     ];
 
-    protected $casts = [
-        'estado' => 'boolean'
-    ];
+    public $timestamps = true;
 
     public function productos()
     {

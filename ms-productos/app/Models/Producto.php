@@ -17,9 +17,11 @@ class Producto extends Model
     ];
 
     protected $casts = [
-        'precio' => 'float',
-        'disponible' => 'boolean'
+        'disponible' => 'boolean',
+        'precio' => 'float'
     ];
+
+    public $timestamps = true;
 
     public function categoria()
     {

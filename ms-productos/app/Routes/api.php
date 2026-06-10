@@ -1,26 +1,38 @@
 <?php
 
+use Slim\App;
+use Slim\Routing\RouteCollectorProxy;
+use App\Controllers\CategoriaController;
 use App\Controllers\ProductoController;
 use App\Middleware\AuthMiddleware;
-use Slim\Routing\RouteCollectorProxy;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
-$app->group('', function (RouteCollectorProxy $group) {
-    $group->get('/productos', [ProductoController::class, 'listarProductos']);
+return function (App $app) {
 
-    $group->get('/productos/categoria/{categoria}', [
-        ProductoController::class,
-        'productosPorCategoria'
-    ]);
+    $categoriaController = new CategoriaController();
+    $productoController = new ProductoController();
+    $authMiddleware = new AuthMiddleware();
 
-    $group->get('/productos/{id}', [ProductoController::class, 'verProducto']);
+    $app->get('/', function (Request $request, Response $response) {
+        $response->getBody()->write(json_encode([
+            'estado' => true,
+            'mensaje' => 'Microservicio de productos funcionando'
+        ], JSON_UNESCAPED_UNICODE));
 
-    $group->post('/productos', [ProductoController::class, 'crearProducto']);
+        return $response->withHeader('Content-Type', 'application/json');
+    });
 
-    $group->put('/productos/{id}', [ProductoController::class, 'actualizarProducto']);
+    $app->group('', function (RouteCollectorProxy $group) use ($categoriaController, $productoController) {
 
-    $group->delete('/productos/{id}', [ProductoController::class, 'eliminarProducto']);
+        $group->get('/categorias', [$categoriaController, 'listar']);
+        $group->post('/categorias', [$categoriaController, 'crear']);
 
-    $group->get('/categorias', [ProductoController::class, 'listarCategorias']);
+        $group->get('/productos', [$productoController, 'listar']);
+        $group->get('/productos/{id}', [$productoController, 'ver']);
+        $group->post('/productos', [$productoController, 'crear']);
+        $group->put('/productos/{id}', [$productoController, 'actualizar']);
+        $group->delete('/productos/{id}', [$productoController, 'eliminar']);
 
-    $group->post('/categorias', [ProductoController::class, 'crearCategoria']);
-})->add(new AuthMiddleware());
+    })->add($authMiddleware);
+};
