@@ -17,4 +17,40 @@ class ProductoController
         return $response
             ->withHeader('Content-Type', 'application/json');
     }
+
+    public function store(Request $request, Response $response)
+    {
+        $data = $request->getParsedBody();
+
+        if (empty($data['nombre'])) {
+
+            $response->getBody()->write(
+                json_encode([
+                    'error' => 'Nombre requerido'
+                ])
+            );
+
+            return $response->withStatus(400);
+        }
+
+        if ($data['precio'] <= 0) {
+
+            $response->getBody()->write(
+                json_encode([
+                    'error' => 'Precio inválido'
+                ])
+            );
+
+            return $response->withStatus(400);
+        }
+
+        $producto = Producto::create($data);
+
+        $response->getBody()->write(
+            $producto->toJson()
+        );
+
+        return $response
+            ->withHeader('Content-Type', 'application/json');
+    }
 }
