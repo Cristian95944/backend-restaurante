@@ -8,147 +8,210 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 
 class MesaController
 {
-    public function listarMesas(Request $request, Response $response): Response
+    private array $estadosMesa = [
+        'disponible',
+        'reservada',
+        'ocupada',
+        'fuera_servicio'
+    ];
+
+    private function json(Response $response, array $datos, int $codigo = 200): Response
     {
-        $mesas = Mesa::all();
+        $response->getBody()->write(json_encode($datos, JSON_UNESCAPED_UNICODE));
+
+        return $response
+            ->withHeader('Content-Type', 'application/json')
+            ->withStatus($codigo);
+    }
+
+    private function datos(Request $request): array
+    {
+        $datos = $request->getParsedBody();
+
+        if (!is_array($datos)) {
+            $datos = json_decode($request->getBody()->getContents(), true);
+        }
+
+        return is_array($datos) ? $datos : [];
+    }
+
+    public function listar(Request $request, Response $response): Response
+    {
+        $params = $request->getQueryParams();
+
+        $consulta = Mesa::orderBy('id', 'asc');
+
+        if (!empty($params['estado'])) {
+            $consulta->where('estado', $params['estado']);
+        }
+
+        $mesas = $consulta->get();
 
         return $this->json($response, [
-            'success' => true,
+            'estado' => true,
+            'mensaje' => 'Listado de mesas',
             'mesas' => $mesas
         ]);
     }
 
-    public function verMesa(Request $request, Response $response, array $args): Response
+    public function ver(Request $request, Response $response, array $args): Response
     {
         $mesa = Mesa::find($args['id']);
 
         if (!$mesa) {
             return $this->json($response, [
-                'success' => false,
-                'message' => 'Mesa no encontrada'
+                'estado' => false,
+                'mensaje' => 'Mesa no encontrada'
             ], 404);
         }
 
         return $this->json($response, [
-            'success' => true,
+            'estado' => true,
+            'mensaje' => 'Información de la mesa',
             'mesa' => $mesa
         ]);
     }
 
-    public function crearMesa(Request $request, Response $response): Response
+    public function crear(Request $request, Response $response): Response
     {
-        $data = $request->getParsedBody() ?? [];
+        $datos = $this->datos($request);
 
-        if (empty($data['numero'])) {
+        $numero = trim($datos['numero'] ?? '');
+        $capacidad = (int)($datos['capacidad'] ?? 0);
+        $estado = $datos['estado'] ?? 'disponible';
+
+        if ($numero === '') {
             return $this->json($response, [
-                'success' => false,
-                'message' => 'El número de la mesa es obligatorio'
+                'estado' => false,
+                'mensaje' => 'El número o nombre de la mesa es obligatorio'
             ], 400);
         }
 
-        if (empty($data['capacidad']) || (int) $data['capacidad'] <= 0) {
+        if ($capacidad <= 0) {
             return $this->json($response, [
-                'success' => false,
-                'message' => 'La capacidad debe ser mayor que cero'
+                'estado' => false,
+                'mensaje' => 'La capacidad debe ser mayor a cero'
             ], 400);
         }
 
-        $mesaExistente = Mesa::where('numero', $data['numero'])->first();
-
-        if ($mesaExistente) {
+        if (!in_array($estado, $this->estadosMesa)) {
             return $this->json($response, [
-                'success' => false,
-                'message' => 'Ya existe una mesa con ese número'
+                'estado' => false,
+                'mensaje' => 'Estado de mesa no válido'
+            ], 400);
+        }
+
+        $existe = Mesa::where('numero', $numero)->exists();
+
+        if ($existe) {
+            return $this->json($response, [
+                'estado' => false,
+                'mensaje' => 'Ya existe una mesa con ese número o nombre'
             ], 400);
         }
 
         $mesa = Mesa::create([
-            'numero' => $data['numero'],
-            'capacidad' => $data['capacidad'],
-            'estado' => $data['estado'] ?? 'disponible'
+            'numero' => $numero,
+            'capacidad' => $capacidad,
+            'estado' => $estado
         ]);
 
         return $this->json($response, [
-            'success' => true,
-            'message' => 'Mesa creada correctamente',
+            'estado' => true,
+            'mensaje' => 'Mesa registrada correctamente',
             'mesa' => $mesa
         ], 201);
     }
 
-    public function actualizarMesa(Request $request, Response $response, array $args): Response
+    public function actualizar(Request $request, Response $response, array $args): Response
     {
         $mesa = Mesa::find($args['id']);
 
         if (!$mesa) {
             return $this->json($response, [
-                'success' => false,
-                'message' => 'Mesa no encontrada'
+                'estado' => false,
+                'mensaje' => 'Mesa no encontrada'
             ], 404);
         }
 
-        $data = $request->getParsedBody() ?? [];
+        $datos = $this->datos($request);
 
-        if (isset($data['capacidad']) && (int) $data['capacidad'] <= 0) {
+        $numero = trim($datos['numero'] ?? $mesa->numero);
+        $capacidad = (int)($datos['capacidad'] ?? $mesa->capacidad);
+        $estado = $datos['estado'] ?? $mesa->estado;
+
+        if ($numero === '') {
             return $this->json($response, [
-                'success' => false,
-                'message' => 'La capacidad debe ser mayor que cero'
+                'estado' => false,
+                'mensaje' => 'El número o nombre de la mesa es obligatorio'
             ], 400);
         }
 
-        if (isset($data['numero'])) {
-            $mesaExistente = Mesa::where('numero', $data['numero'])
-                ->where('id', '!=', $mesa->id)
-                ->first();
-
-            if ($mesaExistente) {
-                return $this->json($response, [
-                    'success' => false,
-                    'message' => 'Ya existe otra mesa con ese número'
-                ], 400);
-            }
+        if ($capacidad <= 0) {
+            return $this->json($response, [
+                'estado' => false,
+                'mensaje' => 'La capacidad debe ser mayor a cero'
+            ], 400);
         }
 
-        $mesa->update($data);
+        if (!in_array($estado, $this->estadosMesa)) {
+            return $this->json($response, [
+                'estado' => false,
+                'mensaje' => 'Estado de mesa no válido'
+            ], 400);
+        }
+
+        $mesaDuplicada = Mesa::where('numero', $numero)
+            ->where('id', '!=', $mesa->id)
+            ->exists();
+
+        if ($mesaDuplicada) {
+            return $this->json($response, [
+                'estado' => false,
+                'mensaje' => 'Ya existe otra mesa con ese número o nombre'
+            ], 400);
+        }
+
+        $mesa->numero = $numero;
+        $mesa->capacidad = $capacidad;
+        $mesa->estado = $estado;
+        $mesa->save();
 
         return $this->json($response, [
-            'success' => true,
-            'message' => 'Mesa actualizada correctamente',
+            'estado' => true,
+            'mensaje' => 'Mesa actualizada correctamente',
             'mesa' => $mesa
         ]);
     }
 
-    public function eliminarMesa(Request $request, Response $response, array $args): Response
+    public function cambiarEstado(Request $request, Response $response, array $args): Response
     {
         $mesa = Mesa::find($args['id']);
 
         if (!$mesa) {
             return $this->json($response, [
-                'success' => false,
-                'message' => 'Mesa no encontrada'
+                'estado' => false,
+                'mensaje' => 'Mesa no encontrada'
             ], 404);
         }
 
-        if ($mesa->reservas()->count() > 0) {
+        $datos = $this->datos($request);
+        $estado = $datos['estado'] ?? '';
+
+        if (!in_array($estado, $this->estadosMesa)) {
             return $this->json($response, [
-                'success' => false,
-                'message' => 'No se puede eliminar la mesa porque tiene reservas asociadas'
+                'estado' => false,
+                'mensaje' => 'Estado de mesa no válido'
             ], 400);
         }
 
-        $mesa->delete();
+        $mesa->estado = $estado;
+        $mesa->save();
 
         return $this->json($response, [
-            'success' => true,
-            'message' => 'Mesa eliminada correctamente'
+            'estado' => true,
+            'mensaje' => 'Estado de mesa actualizado',
+            'mesa' => $mesa
         ]);
-    }
-
-    private function json(Response $response, array $data, int $status = 200): Response
-    {
-        $response->getBody()->write(json_encode($data));
-
-        return $response
-            ->withStatus($status)
-            ->withHeader('Content-Type', 'application/json');
     }
 }

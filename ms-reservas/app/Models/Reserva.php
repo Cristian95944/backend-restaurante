@@ -19,6 +19,8 @@ class Reserva extends Model
         'mesa_id'
     ];
 
+    public $timestamps = true;
+
     public function mesa()
     {
         return $this->belongsTo(Mesa::class, 'mesa_id');

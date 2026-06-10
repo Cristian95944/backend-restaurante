@@ -1,26 +1,42 @@
 <?php
 
+use Slim\App;
+use Slim\Routing\RouteCollectorProxy;
 use App\Controllers\MesaController;
 use App\Controllers\ReservaController;
+use App\Middleware\AuthMiddleware;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
-$app->get('/mesas', [MesaController::class, 'listarMesas']);
+return function (App $app) {
 
-$app->get('/mesas/{id}', [MesaController::class, 'verMesa']);
+    $mesaController = new MesaController();
+    $reservaController = new ReservaController();
+    $authMiddleware = new AuthMiddleware();
 
-$app->post('/mesas', [MesaController::class, 'crearMesa']);
+    $app->get('/', function (Request $request, Response $response) {
+        $response->getBody()->write(json_encode([
+            'estado' => true,
+            'mensaje' => 'Microservicio de reservas funcionando'
+        ], JSON_UNESCAPED_UNICODE));
 
-$app->put('/mesas/{id}', [MesaController::class, 'actualizarMesa']);
+        return $response->withHeader('Content-Type', 'application/json');
+    });
 
-$app->delete('/mesas/{id}', [MesaController::class, 'eliminarMesa']);
+    $app->group('', function (RouteCollectorProxy $group) use ($mesaController, $reservaController) {
 
-$app->get('/reservas', [ReservaController::class, 'listarReservas']);
+        $group->get('/mesas', [$mesaController, 'listar']);
+        $group->get('/mesas/{id}', [$mesaController, 'ver']);
+        $group->post('/mesas', [$mesaController, 'crear']);
+        $group->put('/mesas/{id}', [$mesaController, 'actualizar']);
+        $group->put('/mesas/{id}/estado', [$mesaController, 'cambiarEstado']);
 
-$app->get('/reservas/{id}', [ReservaController::class, 'verReserva']);
+        $group->get('/reservas', [$reservaController, 'listar']);
+        $group->get('/reservas/{id}', [$reservaController, 'ver']);
+        $group->post('/reservas', [$reservaController, 'crear']);
+        $group->put('/reservas/{id}', [$reservaController, 'actualizar']);
+        $group->put('/reservas/{id}/estado', [$reservaController, 'cambiarEstado']);
+        $group->put('/reservas/{id}/cancelar', [$reservaController, 'cancelar']);
 
-$app->get('/reservas/mesa/{mesa}', [ReservaController::class, 'reservasPorMesa']);
-
-$app->post('/reservas', [ReservaController::class, 'crearReserva']);
-
-$app->put('/reservas/{id}', [ReservaController::class, 'actualizarReserva']);
-
-$app->delete('/reservas/{id}', [ReservaController::class, 'eliminarReserva']);
+    })->add($authMiddleware);
+};

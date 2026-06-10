@@ -14,6 +14,8 @@ class Mesa extends Model
         'estado'
     ];
 
+    public $timestamps = true;
+
     public function reservas()
     {
         return $this->hasMany(Reserva::class, 'mesa_id');
