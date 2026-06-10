@@ -18,4 +18,12 @@ class Reserva extends Model
         'estado',
         'mesa_id'
     ];
+
+    public function mesa()
+    {
+        return $this->belongsTo(
+            Mesa::class,
+            'mesa_id'
+        );
+    }
 }

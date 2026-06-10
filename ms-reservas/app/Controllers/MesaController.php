@@ -14,7 +14,108 @@ class MesaController
             Mesa::all()->toJson()
         );
 
-        return $response
-            ->withHeader('Content-Type', 'application/json');
+        return $response->withHeader(
+            'Content-Type',
+            'application/json'
+        );
+    }
+
+    public function show(Request $request, Response $response, array $args)
+    {
+        $mesa = Mesa::find($args['id']);
+
+        if (!$mesa) {
+
+            $response->getBody()->write(
+                json_encode([
+                    'error' => 'Mesa no encontrada'
+                ])
+            );
+
+            return $response->withStatus(404);
+        }
+
+        $response->getBody()->write(
+            $mesa->toJson()
+        );
+
+        return $response->withHeader(
+            'Content-Type',
+            'application/json'
+        );
+    }
+
+    public function store(Request $request, Response $response)
+    {
+        $mesa = Mesa::create(
+            $request->getParsedBody()
+        );
+
+        $response->getBody()->write(
+            $mesa->toJson()
+        );
+
+        return $response->withHeader(
+            'Content-Type',
+            'application/json'
+        );
+    }
+
+    public function update(Request $request, Response $response, array $args)
+    {
+        $mesa = Mesa::find($args['id']);
+
+        if (!$mesa) {
+
+            $response->getBody()->write(
+                json_encode([
+                    'error' => 'Mesa no encontrada'
+                ])
+            );
+
+            return $response->withStatus(404);
+        }
+
+        $mesa->update(
+            $request->getParsedBody()
+        );
+
+        $response->getBody()->write(
+            $mesa->toJson()
+        );
+
+        return $response->withHeader(
+            'Content-Type',
+            'application/json'
+        );
+    }
+
+    public function destroy(Request $request, Response $response, array $args)
+    {
+        $mesa = Mesa::find($args['id']);
+
+        if (!$mesa) {
+
+            $response->getBody()->write(
+                json_encode([
+                    'error' => 'Mesa no encontrada'
+                ])
+            );
+
+            return $response->withStatus(404);
+        }
+
+        $mesa->delete();
+
+        $response->getBody()->write(
+            json_encode([
+                'success' => true
+            ])
+        );
+
+        return $response->withHeader(
+            'Content-Type',
+            'application/json'
+        );
     }
 }

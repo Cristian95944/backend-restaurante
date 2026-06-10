@@ -18,4 +18,8 @@ class Usuario extends Model
         'sesion_activa',
         'estado'
     ];
+
+    protected $hidden = [
+        'contrasena'
+    ];
 }

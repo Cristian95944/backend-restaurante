@@ -1,34 +1,80 @@
 <?php
 
-namespace App\Services;
+namespace App\Controllers;
 
 use App\Models\Usuario;
+use App\Services\AuthService;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
-class AuthService
+class AuthController
 {
-    public function login($usuario, $contrasena)
+    public function login(Request $request, Response $response)
     {
-        $user = Usuario::where('usuario', $usuario)
-            ->orWhere('correo', $usuario)
-            ->first();
+        $data = $request->getParsedBody();
 
-        if (!$user) {
-            return false;
+        if (
+            empty($data['usuario']) ||
+            empty($data['contrasena'])
+        ) {
+
+            $response->getBody()->write(
+                json_encode([
+                    'success' => false,
+                    'message' => 'Datos incompletos'
+                ])
+            );
+
+            return $response->withStatus(400);
         }
 
-        if ($user->contrasena !== $contrasena) {
-            return false;
+        $service = new AuthService();
+
+        $result = $service->login(
+            $data['usuario'],
+            $data['contrasena']
+        );
+
+        $response->getBody()->write(
+            json_encode($result)
+        );
+
+        return $response->withHeader(
+            'Content-Type',
+            'application/json'
+        );
+    }
+
+    public function logout(Request $request, Response $response)
+    {
+        $token = str_replace(
+            'Bearer ',
+            '',
+            $request->getHeaderLine('Authorization')
+        );
+
+        $usuario = Usuario::where(
+            'token',
+            $token
+        )->first();
+
+        if ($usuario) {
+
+            $usuario->token = null;
+            $usuario->sesion_activa = false;
+            $usuario->save();
         }
 
-        $token = bin2hex(random_bytes(32));
+        $response->getBody()->write(
+            json_encode([
+                'success' => true,
+                'message' => 'Sesión cerrada'
+            ])
+        );
 
-        $user->token = $token;
-        $user->sesion_activa = true;
-        $user->save();
-
-        return [
-            'token' => $token,
-            'usuario' => $user
-        ];
+        return $response->withHeader(
+            'Content-Type',
+            'application/json'
+        );
     }
 }

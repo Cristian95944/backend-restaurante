@@ -2,6 +2,12 @@
 
 use App\Controllers\AuthController;
 
-$app->post('/login', [AuthController::class,'login']);
+$app->post(
+    '/login',
+    [AuthController::class, 'login']
+);
 
-$app->post('/logout', [AuthController::class,'logout']);
+$app->post(
+    '/logout',
+    [AuthController::class, 'logout']
+);
