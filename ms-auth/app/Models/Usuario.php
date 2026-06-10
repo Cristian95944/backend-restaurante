@@ -19,12 +19,5 @@ class Usuario extends Model
         'estado'
     ];
 
-    protected $hidden = [
-        'contrasena'
-    ];
-
-    protected $casts = [
-        'sesion_activa' => 'boolean',
-        'estado' => 'boolean'
-    ];
-}
+    public $timestamps = true;
+}   
