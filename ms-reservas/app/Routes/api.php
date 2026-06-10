@@ -3,13 +3,24 @@
 use App\Controllers\MesaController;
 use App\Controllers\ReservaController;
 
-$app->get('/mesas', [MesaController::class, 'index']);
-$app->get('/mesas/{id}', [MesaController::class, 'show']);
-$app->post('/mesas', [MesaController::class, 'store']);
-$app->put('/mesas/{id}', [MesaController::class, 'update']);
-$app->delete('/mesas/{id}', [MesaController::class, 'destroy']);
+$app->get('/mesas', [MesaController::class, 'listarMesas']);
 
-$app->get('/reservas', [ReservaController::class, 'index']);
-$app->get('/reservas/{id}', [ReservaController::class, 'show']);
-$app->post('/reservas', [ReservaController::class, 'store']);
-$app->delete('/reservas/{id}', [ReservaController::class, 'destroy']);
+$app->get('/mesas/{id}', [MesaController::class, 'verMesa']);
+
+$app->post('/mesas', [MesaController::class, 'crearMesa']);
+
+$app->put('/mesas/{id}', [MesaController::class, 'actualizarMesa']);
+
+$app->delete('/mesas/{id}', [MesaController::class, 'eliminarMesa']);
+
+$app->get('/reservas', [ReservaController::class, 'listarReservas']);
+
+$app->get('/reservas/{id}', [ReservaController::class, 'verReserva']);
+
+$app->get('/reservas/mesa/{mesa}', [ReservaController::class, 'reservasPorMesa']);
+
+$app->post('/reservas', [ReservaController::class, 'crearReserva']);
+
+$app->put('/reservas/{id}', [ReservaController::class, 'actualizarReserva']);
+
+$app->delete('/reservas/{id}', [ReservaController::class, 'eliminarReserva']);

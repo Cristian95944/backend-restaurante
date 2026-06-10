@@ -3,58 +3,76 @@
 namespace App\Controllers;
 
 use App\Services\AuthService;
-use App\Models\Usuario;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class AuthController
 {
-    public function login(Request $request, Response $response)
+    private AuthService $authService;
+
+    public function __construct()
     {
-        $data = $request->getParsedBody();
-
-        $service = new AuthService();
-
-        $result = $service->login(
-            $data['usuario'],
-            $data['contrasena']
-        );
-
-        $response->getBody()->write(
-            json_encode($result)
-        );
-
-        return $response
-            ->withHeader('Content-Type', 'application/json');
+        $this->authService = new AuthService();
     }
 
-    public function logout(Request $request, Response $response)
+    public function login(Request $request, Response $response): Response
     {
-        $token = str_replace(
-            'Bearer ',
-            '',
+        $data = $request->getParsedBody() ?? [];
+
+        $resultado = $this->authService->login(
+            $data['usuario'] ?? '',
+            $data['contrasena'] ?? ''
+        );
+
+        return $this->json(
+            $response,
+            $resultado['data'],
+            $resultado['status']
+        );
+    }
+
+    public function logout(Request $request, Response $response): Response
+    {
+        $resultado = $this->authService->logout(
             $request->getHeaderLine('Authorization')
         );
 
-        $usuario = Usuario::where(
-            'token',
-            $token
-        )->first();
+        return $this->json(
+            $response,
+            $resultado['data'],
+            $resultado['status']
+        );
+    }
 
-        if ($usuario) {
-
-            $usuario->token = null;
-            $usuario->sesion_activa = false;
-            $usuario->save();
-        }
-
-        $response->getBody()->write(
-            json_encode([
-                'success' => true
-            ])
+    public function validar(Request $request, Response $response): Response
+    {
+        $usuario = $this->authService->validarToken(
+            $request->getHeaderLine('Authorization')
         );
 
+        if (!$usuario) {
+            return $this->json($response, [
+                'success' => false,
+                'message' => 'Token inválido'
+            ], 401);
+        }
+
+        return $this->json($response, [
+            'success' => true,
+            'usuario' => [
+                'id' => $usuario->id,
+                'nombre' => $usuario->nombre,
+                'rol' => $usuario->rol
+            ]
+        ]);
+    }
+
+    private function json(Response $response, array $data, int $status = 200): Response
+    {
+        $response->getBody()->write(json_encode($data));
+
         return $response
+            ->withStatus($status)
             ->withHeader('Content-Type', 'application/json');
     }
 }

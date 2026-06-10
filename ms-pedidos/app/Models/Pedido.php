@@ -16,4 +16,14 @@ class Pedido extends Model
         'total',
         'estado'
     ];
+
+    protected $casts = [
+        'subtotal' => 'float',
+        'total' => 'float'
+    ];
+
+    public function detalles()
+    {
+        return $this->hasMany(DetallePedido::class, 'pedido_id');
+    }
 }

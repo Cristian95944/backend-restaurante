@@ -16,4 +16,15 @@ class DetallePedido extends Model
         'precio_unitario',
         'subtotal'
     ];
+
+    protected $casts = [
+        'cantidad' => 'integer',
+        'precio_unitario' => 'float',
+        'subtotal' => 'float'
+    ];
+
+    public function pedido()
+    {
+        return $this->belongsTo(Pedido::class, 'pedido_id');
+    }
 }

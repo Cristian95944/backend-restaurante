@@ -16,11 +16,13 @@ class Producto extends Model
         'categoria_id'
     ];
 
+    protected $casts = [
+        'precio' => 'float',
+        'disponible' => 'boolean'
+    ];
+
     public function categoria()
     {
-        return $this->belongsTo(
-            Categoria::class,
-            'categoria_id'
-        );
+        return $this->belongsTo(Categoria::class, 'categoria_id');
     }
 }

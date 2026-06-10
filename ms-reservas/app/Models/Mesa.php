@@ -13,4 +13,9 @@ class Mesa extends Model
         'capacidad',
         'estado'
     ];
+
+    public function reservas()
+    {
+        return $this->hasMany(Reserva::class, 'mesa_id');
+    }
 }

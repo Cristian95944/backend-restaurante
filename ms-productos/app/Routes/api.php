@@ -1,23 +1,26 @@
 <?php
 
 use App\Controllers\ProductoController;
-use App\Controllers\CategoriaController;
+use App\Middleware\AuthMiddleware;
+use Slim\Routing\RouteCollectorProxy;
 
-$app->get('/productos', [ProductoController::class, 'index']);
+$app->group('', function (RouteCollectorProxy $group) {
+    $group->get('/productos', [ProductoController::class, 'listarProductos']);
 
-$app->get('/productos/{id}', [ProductoController::class, 'show']);
+    $group->get('/productos/categoria/{categoria}', [
+        ProductoController::class,
+        'productosPorCategoria'
+    ]);
 
-$app->post('/productos', [ProductoController::class, 'store']);
+    $group->get('/productos/{id}', [ProductoController::class, 'verProducto']);
 
-$app->put('/productos/{id}', [ProductoController::class, 'update']);
+    $group->post('/productos', [ProductoController::class, 'crearProducto']);
 
-$app->delete('/productos/{id}', [ProductoController::class, 'destroy']);
+    $group->put('/productos/{id}', [ProductoController::class, 'actualizarProducto']);
 
-$app->get(
-    '/productos/categoria/{categoria}',
-    [ProductoController::class, 'porCategoria']
-);
+    $group->delete('/productos/{id}', [ProductoController::class, 'eliminarProducto']);
 
-$app->get('/categorias', [CategoriaController::class, 'index']);
+    $group->get('/categorias', [ProductoController::class, 'listarCategorias']);
 
-$app->post('/categorias', [CategoriaController::class, 'store']);
+    $group->post('/categorias', [ProductoController::class, 'crearCategoria']);
+})->add(new AuthMiddleware());

@@ -21,9 +21,6 @@ class Reserva extends Model
 
     public function mesa()
     {
-        return $this->belongsTo(
-            Mesa::class,
-            'mesa_id'
-        );
+        return $this->belongsTo(Mesa::class, 'mesa_id');
     }
 }

@@ -22,4 +22,9 @@ class Usuario extends Model
     protected $hidden = [
         'contrasena'
     ];
+
+    protected $casts = [
+        'sesion_activa' => 'boolean',
+        'estado' => 'boolean'
+    ];
 }
